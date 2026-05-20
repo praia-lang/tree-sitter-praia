@@ -251,6 +251,7 @@ module.exports = grammar({
       $.super,
       $.array_literal,
       $.map_literal,
+      $.set_literal,
       $.parenthesized_expression,
       $.call_expression,
       $.member_expression,
@@ -361,6 +362,19 @@ module.exports = grammar({
         $.computed_pair,
         $.spread_element,
       )),
+      '}',
+    ),
+
+    // Set literal: #{1, 2, 3}. The opener is the two-character
+    // sequence `#{` (a single token in the Praia lexer); the closer
+    // is just `}`. Empty set is `#{}`. Elements are arbitrary
+    // expressions; spread already routes through primary_expression
+    // → spread_element, so we don't enumerate it separately (doing
+    // so creates an ambiguity since both paths can produce the same
+    // node).
+    set_literal: $ => seq(
+      '#{',
+      commaSep($._expression),
       '}',
     ),
 
