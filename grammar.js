@@ -190,9 +190,24 @@ module.exports = grammar({
       optional(seq('finally', $.block)),
     ),
 
+    // Two forms:
+    //   ensure (cond) else { ... }                  — conditional guard
+    //   ensure let name = expr else { ... }         — Swift-style
+    //                                                 optional-unwrap
+    //                                                 binding; `else`
+    //                                                 fires only when
+    //                                                 the RHS is nil.
+    // The else block must terminate (return / throw / break / continue
+    // or an if/elif/else whose branches all terminate); that rule is
+    // enforced at parse time in the Praia engine, not at the grammar
+    // level here, since tree-sitter doesn't validate semantic
+    // properties on syntactically-valid programs.
     ensure_statement: $ => seq(
       'ensure',
-      $.parenthesized_expression,
+      choice(
+        $.parenthesized_expression,
+        seq('let', $.identifier, '=', $._expression),
+      ),
       'else',
       $.block,
     ),
